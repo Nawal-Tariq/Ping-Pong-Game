@@ -25,9 +25,9 @@ string1: db '                       Nawal   23F-0776', 0
 string2: db '                       Warisha 23F-0534', 0
 
 ; Background pattern variables
-pattern1_pos: dw 1120
-pattern2_pos: dw 1760
-pattern3_pos: dw 2400
+pattern1_pos: dw 640
+pattern2_pos: dw 1600
+pattern3_pos: dw 2560
 
 start:
 main_loop:
@@ -588,6 +588,7 @@ print_win_message:
     push di
     mov ax, 0xb800
     mov es, ax
+  
     mov di, 1616 ; Position to print the win message
     mov ah, 0x0B
 next_win_message:
@@ -748,7 +749,7 @@ draw_background:
     call draw_pattern3
     ret
 
-; Subroutine: Draw Pattern 1 
+; Subroutine: Draw Pattern 1
 draw_pattern1:
     push es
     push ax
@@ -770,7 +771,7 @@ draw_pattern1_loop:
     pop es
     ret
 
-; Subroutine: Draw Pattern 2 
+; Subroutine: Draw Pattern 2
 draw_pattern2:
     push es
     push ax
@@ -792,7 +793,7 @@ draw_pattern2_loop:
     pop es
     ret
 
-; Subroutine: Draw Pattern 3 
+; Subroutine: Draw Pattern 3
 draw_pattern3:
     push es
     push ax
@@ -818,8 +819,8 @@ draw_pattern3_loop:
 update_background:
     ; Update pattern positions
     add word [pattern1_pos], 2
-    add word [pattern2_pos], 4
-    add word [pattern3_pos], 6
+    add word [pattern2_pos], 2
+    add word [pattern3_pos], 2
 
     ; Reset positions if they exceed screen width
     cmp word [pattern1_pos], 4000
@@ -838,4 +839,4 @@ no_reset_pattern2:
 no_reset_pattern3:
 
     call draw_background
-    ret
+    ret
