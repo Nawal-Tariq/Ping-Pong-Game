@@ -24,10 +24,16 @@ left_player: db 'Left Player', 0
 string1: db '                       Nawal   23F-0776', 0
 string2: db '                       Warisha 23F-0534', 0
 
+; Background pattern variables
+pattern1_pos: dw 1120
+pattern2_pos: dw 1760
+pattern3_pos: dw 2400
+
 start:
 main_loop:
     ; Initialize the game
     call clrscr
+    call draw_background
     mov ax, message
     push ax
     push word [length]
@@ -59,9 +65,10 @@ main_loop:
     call erase_char
     call check_keys
     call update_score
-call print_top_strings
+    call print_top_strings
     call display_score
     call check_win
+    call update_background
 
     jmp main_loop
 
@@ -447,11 +454,7 @@ change_dir_y_top:
 change_dir_y_bottom:
     neg byte [dir_y]
     ret
-change_dir_bottom_left:
-    ; Handle the bottom-left corner specifically
-    neg byte [dir_x]
-    neg byte [dir_y]
-    ret
+
 check_left_paddle:
     mov ax, [start_y]
     mov bx, [paddle1_y]
@@ -491,6 +494,7 @@ update_score:
     jne check_right_boundary
     ; Ball has crossed the left boundary, increment right player's score
     inc word [score2]
+    call reset_ball
     ret
 
 check_right_boundary:
@@ -502,9 +506,18 @@ check_right_boundary:
     jne no_score_update
     ; Ball has crossed the right boundary, increment left player's score
     inc word [score1]
+    call reset_ball
     ret
 
 no_score_update:
+    ret
+
+reset_ball:
+    ; Reset ball position and direction
+    mov word [start_x], 40
+    mov word [start_y], 12
+    mov byte [dir_x], 1
+    mov byte [dir_y], 1
     ret
 
 ; Subroutine: Display Score
@@ -680,7 +693,8 @@ end_string:
     pop cx
     pop ax
     ret
-;Subroutine: Print top Strings
+
+; Subroutine: Print top Strings
 print_top_strings:
     push es
     push ax
@@ -726,3 +740,102 @@ endstring:
     pop cx
     pop ax
     ret
+
+; Subroutine: Draw Background
+draw_background:
+    call draw_pattern1
+    call draw_pattern2
+    call draw_pattern3
+    ret
+
+; Subroutine: Draw Pattern 1 
+draw_pattern1:
+    push es
+    push ax
+    push bx
+    push cx
+    push di
+    mov ax, 0xb800
+    mov es, ax
+    mov di, [pattern1_pos]
+    mov cx, 80
+draw_pattern1_loop:
+    mov word [es:di], 0x097E ; Draw '~' character with light gray attribute
+    add di, 6
+    loop draw_pattern1_loop
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    pop es
+    ret
+
+; Subroutine: Draw Pattern 2 
+draw_pattern2:
+    push es
+    push ax
+    push bx
+    push cx
+    push di
+    mov ax, 0xb800
+    mov es, ax
+    mov di, [pattern2_pos]
+    mov cx, 80
+draw_pattern2_loop:
+    mov word [es:di], 0x057E ; Draw '~' character with light gray attribute
+    add di, 6
+    loop draw_pattern2_loop
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    pop es
+    ret
+
+; Subroutine: Draw Pattern 3 
+draw_pattern3:
+    push es
+    push ax
+    push bx
+    push cx
+    push di
+    mov ax, 0xb800
+    mov es, ax
+    mov di, [pattern3_pos]
+    mov cx, 80
+draw_pattern3_loop:
+    mov word [es:di], 0x027E ; Draw '~' character with light gray attribute
+    add di, 6
+    loop draw_pattern3_loop
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    pop es
+    ret
+
+; Subroutine: Update Background
+update_background:
+    ; Update pattern positions
+    add word [pattern1_pos], 2
+    add word [pattern2_pos], 4
+    add word [pattern3_pos], 6
+
+    ; Reset positions if they exceed screen width
+    cmp word [pattern1_pos], 4000
+    jl no_reset_pattern1
+    mov word [pattern1_pos], 0
+no_reset_pattern1:
+
+    cmp word [pattern2_pos], 4000
+    jl no_reset_pattern2
+    mov word [pattern2_pos], 0
+no_reset_pattern2:
+
+    cmp word [pattern3_pos], 4000
+    jl no_reset_pattern3
+    mov word [pattern3_pos], 0
+no_reset_pattern3:
+
+    call draw_background
+    ret
